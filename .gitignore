@@ -1,0 +1,11 @@
+.env
+.claude/
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.playwright-mcp/
+node_modules/
+*.png
+*.jpeg

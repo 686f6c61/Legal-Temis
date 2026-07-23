@@ -1,0 +1,67 @@
+[project]
+name = "legislacion"
+version = "0.1.0"
+description = "API de consulta de normativa autonómica española con IA"
+readme = "README.md"
+authors = [
+    { name = "686f6c61" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "anthropic>=0.118.0",
+    "beautifulsoup4>=4.15.0",
+    "fastapi>=0.139.2",
+    "httpx>=0.28.1",
+    "lxml>=6.1.1",
+    "openai>=2.47.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.2",
+    "redis>=8.0.1",
+    "uvicorn[standard]>=0.51.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "lxml-stubs>=0.5.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "respx>=0.23.1",
+    "ruff>=0.15.22",
+    "ty>=0.0.62",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D",       # docstrings no obligatorios
+    "COM812",  # incompatible con el formateador
+    "ISC001",  # incompatible con el formateador
+    "RUF001",  # texto en castellano con signos legítimos
+    "RUF002",
+    "RUF003",
+    "TC001",   # FastAPI y Pydantic necesitan los tipos en tiempo de ejecución
+    "TC003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR2004", "ANN", "SLF001", "ARG002", "INP001", "TC002", "FBT003"]
+
+[tool.pytest.ini_options]
+addopts = ["--cov=legislacion", "--cov-report=term-missing", "--cov-fail-under=100"]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.ty.environment]
+python-version = "3.14"

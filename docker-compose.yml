@@ -1,0 +1,53 @@
+name: temis
+
+# Compose genérico y autónomo: levanta la API y su Redis en cualquier máquina con
+# Docker. `docker compose up --build -d` y la API queda en http://localhost:4000.
+# Las claves de IA se leen del fichero .env (copia .env.example). No se versiona
+# ningún secreto. Para producción, sirve la API tras un proxy inverso con HTTPS.
+
+services:
+  api:
+    build: ./api
+    restart: unless-stopped
+    ports:
+      - '4000:8000'
+    environment:
+      LEGISLACION_ANTHROPIC_API_KEY: ${LEGISLACION_ANTHROPIC_API_KEY:-}
+      LEGISLACION_OPENAI_API_KEY: ${LEGISLACION_OPENAI_API_KEY:-}
+      LEGISLACION_OPENROUTER_API_KEY: ${LEGISLACION_OPENROUTER_API_KEY:-}
+      LEGISLACION_NAN_API_KEY: ${LEGISLACION_NAN_API_KEY:-}
+      LEGISLACION_MODELOS_NAN: ${LEGISLACION_MODELOS_NAN:-}
+      LEGISLACION_MODELOS_OPENROUTER: ${LEGISLACION_MODELOS_OPENROUTER:-}
+      LEGISLACION_PROVEEDOR_DEFECTO: ${LEGISLACION_PROVEEDOR_DEFECTO:-anthropic}
+      LEGISLACION_CORS_ORIGENES: ${LEGISLACION_CORS_ORIGENES:-*}
+      LEGISLACION_LIMITE_CONSULTA_POR_MINUTO: ${LEGISLACION_LIMITE_CONSULTA_POR_MINUTO:-20}
+      LEGISLACION_LIMITE_COMPARAR_POR_MINUTO: ${LEGISLACION_LIMITE_COMPARAR_POR_MINUTO:-5}
+      LEGISLACION_REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - '-c'
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  redis:
+    image: redis:8.8.0-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--maxmemory', '256mb', '--maxmemory-policy', 'allkeys-lru']
+    volumes:
+      - redis-datos:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-datos:
